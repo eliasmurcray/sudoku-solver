@@ -30,6 +30,36 @@ void draw_grid(SDL_Renderer *renderer) {
   }
 }
 
+void draw_numbers(SDL_Renderer *renderer, TTF_Font *font, int grid[9][9]) {
+  float cell_size = (WINDOW_WIDTH - PADDING) / 9.0f;
+  SDL_Color color = {0, 0, 0, 255};
+  int row = 0;
+  for (; row < 9; row++) {
+    int col = 0;
+    for (; col < 9; col++) {
+      if (grid[row][col] != 0) {
+        char number[2];
+        snprintf(number, sizeof(number), "%d", grid[row][col]);
+        SDL_Surface *textSurface = TTF_RenderText_Blended(font, number, strlen(number), color);
+        SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+        int text_width = textSurface->w;
+        int text_height = textSurface->h;
+        SDL_DestroySurface(textSurface);
+
+        SDL_FRect destRect = {
+            col * cell_size + (cell_size - text_width) / 2 + PADDING / 2.0f,
+            row * cell_size + (cell_size - text_height) / 2 + PADDING / 2.0f,
+            text_width,
+            text_height};
+
+        SDL_RenderTexture(renderer, textTexture, NULL, &destRect);
+        SDL_DestroyTexture(textTexture);
+      }
+    }
+  }
+}
+
 int main() {
   int grid[9][9] = {
       {0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -104,6 +134,7 @@ int main() {
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, textTexture, NULL, &textRect);
     draw_grid(renderer);
+    draw_numbers(renderer, font, grid);
     SDL_RenderPresent(renderer);
   }
 
