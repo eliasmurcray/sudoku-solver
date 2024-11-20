@@ -56,7 +56,8 @@ int main() {
 
   TTF_Font *font = TTF_OpenFont("assets/Roboto-Medium.ttf", 24);
   TTF_Font *small_font = TTF_OpenFont("assets/Roboto-Medium.ttf", 18);
-  if (!font || !small_font) {
+  TTF_Font *super_small_font = TTF_OpenFont("assets/Roboto-Medium.ttf", 12);
+  if (!font || !small_font || !super_small_font) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load font: %s", SDL_GetError());
     return 1;
   }
@@ -84,13 +85,34 @@ int main() {
       .h = textHeight,
   };
 
+  SDL_Color error_color = {255, 0, 0, 255};
+  SDL_Surface *errorSurface = TTF_RenderText_Blended(super_small_font, "Could not solve Sudoku", 0, error_color);
+  if (!errorSurface) {
+    fprintf(stderr, "TTF_RenderText_Solid Error: %s", SDL_GetError());
+    TTF_CloseFont(font);
+    TTF_Quit();
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return 1;
+  }
+  SDL_Texture *errorTexture = SDL_CreateTextureFromSurface(renderer, errorSurface);
+  SDL_DestroySurface(errorSurface);
+  float errorWidth, errorHeight;
+  SDL_GetTextureSize(errorTexture, &errorWidth, &errorHeight);
+  SDL_FRect errorRect = {
+      .x = PADDING / 2.0f,
+      .y = WINDOW_HEIGHT - 55 - errorHeight,
+      .w = errorWidth,
+      .h = errorHeight,
+  };
+
   struct GridDimensions dimensions = {
       .offset_x = PADDING / 2.0f,
       .offset_y = PADDING / 2.0f,
       .size = WINDOW_WIDTH - PADDING};
   SDL_FRect solve_button = {PADDING / 2.0f, WINDOW_HEIGHT - 55, WINDOW_WIDTH / 2.0f - PADDING / 2.0f - 10.0f, 40};
   SDL_FRect reset_button = {WINDOW_WIDTH - PADDING / 2.0f - WINDOW_WIDTH / 2.0f + PADDING / 2.0f + 10.0f, WINDOW_HEIGHT - 55, WINDOW_WIDTH / 2.0f - PADDING / 2.0f - 10.0f, 40};
-  int selected_cell = -1;
+  int selected_cell = -1, solvable = 1;
   SDL_Event event;
   int running = 1;
   while (running) {
@@ -102,8 +124,9 @@ int main() {
         case SDL_EVENT_MOUSE_BUTTON_DOWN: {
           float mx = event.button.x, my = event.button.y;
           if (intersects_frect(&solve_button, mx, my)) {
-            if (!solve_sudoku(grid)) {
-              fprintf(stderr, "Could not solve sudoku\n");
+            solvable = 0;
+            if (solve_sudoku(grid)) {
+              solvable = 1;
             }
           }
           if (intersects_frect(&reset_button, mx, my)) {
@@ -168,6 +191,9 @@ int main() {
     draw_numbers(renderer, font, grid, &dimensions);
     draw_button(renderer, small_font, "Solve", solve_button, (int[]){0, 176, 255, 255});
     draw_button(renderer, small_font, "Reset", reset_button, (int[]){200, 200, 200, 255});
+    if (solvable) {
+      SDL_RenderTexture(renderer, errorTexture, NULL, &errorRect);
+    }
     SDL_RenderPresent(renderer);
   }
 
