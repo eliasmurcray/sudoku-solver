@@ -124,10 +124,7 @@ int main() {
         case SDL_EVENT_MOUSE_BUTTON_DOWN: {
           float mx = event.button.x, my = event.button.y;
           if (intersects_frect(&solve_button, mx, my)) {
-            solvable = 0;
-            if (solve_sudoku(grid)) {
-              solvable = 1;
-            }
+            solvable = is_valid_grid(grid) && solve_sudoku(grid);
           }
           if (intersects_frect(&reset_button, mx, my)) {
             copy_grid(reset_grid, grid);
@@ -191,7 +188,7 @@ int main() {
     draw_numbers(renderer, font, grid, &dimensions);
     draw_button(renderer, small_font, "Solve", solve_button, (int[]){0, 176, 255, 255});
     draw_button(renderer, small_font, "Reset", reset_button, (int[]){200, 200, 200, 255});
-    if (solvable) {
+    if (!solvable) {
       SDL_RenderTexture(renderer, errorTexture, NULL, &errorRect);
     }
     SDL_RenderPresent(renderer);

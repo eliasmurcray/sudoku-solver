@@ -2,6 +2,25 @@
 
 static bool is_valid(int grid[9][9], int row, int col, int num);
 
+bool is_valid_grid(int grid[9][9]) {
+  int row = 0;
+  for (; row < 9; row++) {
+    int col = 0;
+    for (; col < 9; col++) {
+      int num = grid[row][col];
+      if (num != 0) {
+        grid[row][col] = 0;
+        if (!is_valid(grid, row, col, num)) {
+          grid[row][col] = num;
+          return false;
+        }
+        grid[row][col] = num;
+      }
+    }
+  }
+  return true;
+}
+
 bool solve_sudoku(int grid[9][9]) {
   int row = -1, col = -1;
   bool isEmpty = false;
