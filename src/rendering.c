@@ -10,15 +10,13 @@ void draw_grid(SDL_Renderer *renderer, struct GridDimensions *dimensions) {
         .x = i * cell_size + dimensions->offset_x,
         .y = dimensions->offset_y,
         .w = thickness,
-        .h = dimensions->size + thickness
-    };
+        .h = dimensions->size + thickness};
     SDL_RenderFillRect(renderer, &vertical_line);
     SDL_FRect horizontal_line = {
         .x = dimensions->offset_x,
         .y = i * cell_size + dimensions->offset_y,
         .w = dimensions->size + thickness,
-        .h = thickness
-    };
+        .h = thickness};
     SDL_RenderFillRect(renderer, &horizontal_line);
   }
 }
